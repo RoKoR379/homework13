@@ -20,6 +20,7 @@ import java.util.List;
 
 public class task2 {
     private static final String USERS_URI = "https://jsonplaceholder.typicode.com/users";
+    private static final String POST_URI = "https://jsonplaceholder.typicode.com/posts";
 
     public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException, ParseException {
         User user = new User();
@@ -40,11 +41,18 @@ public class task2 {
         user.setBs("harness real-time e-markets");
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String toJson = gson.toJson(getUserPosts(user));
-        System.out.println("toJson = " + toJson);
+
 
         FileWriter fileWriter = new FileWriter("posts.json");
         gson.toJson(getUserPosts(user), fileWriter);
+
+        Post post = new Post();
+        post.setId("10");
+
+        Gson gson2 = new GsonBuilder().setPrettyPrinting().create();
+
+        FileWriter fileWriter2 = new FileWriter("comments.json");
+        gson2.toJson(getPostsComments(post), fileWriter2);
         fileWriter.close();
 
     }
@@ -65,5 +73,23 @@ public class task2 {
         return gson.fromJson(response.body(), new TypeToken<List<Post>>() {}.getType());
 
     }
+
+    public static List<Comment> getPostsComments(Post post) throws IOException, InterruptedException {
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(POST_URI + "/" + post.getId() + "/comments"))
+                .GET()
+                .build();
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        return gson.fromJson(response.body(), new TypeToken<List<Comment>>() {}.getType());
+
+    }
+
 
 }

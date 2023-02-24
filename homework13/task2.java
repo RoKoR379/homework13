@@ -3,43 +3,67 @@ package homework13;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.jsoup.Jsoup;
+import com.google.gson.reflect.TypeToken;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.*;
 import org.jsoup.nodes.Document;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.List;
 
 
 public class task2 {
-    public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException {
-        posts(1);
-    }
-    public static void posts(Integer number) throws IOException, InterruptedException, URISyntaxException {
-        String uri = "https://jsonplaceholder.typicode.com/users/" + number + "/posts";
-        Document document = Jsoup.connect(uri)
-                .ignoreContentType(true)
-                .get();
-        String allposts = document.text();
-        String ch = "\"id\"";
-        int index = allposts.indexOf(ch);
-        int idOccurrences = 0;
-        while (index != -1) {
-            index = allposts.indexOf(ch, index + 1);
-            idOccurrences++;
-        }
-        uri = "https://jsonplaceholder.typicode.com/posts/" + idOccurrences + "/comments";
-        document = Jsoup.connect(uri)
-                .ignoreContentType(true)
-                .get();
-        String allcomments = document.text();
+    private static final String USERS_URI = "https://jsonplaceholder.typicode.com/users";
+
+    public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException, ParseException {
+        User user = new User();
+        user.setId("1");
+        user.setName("Vasyl");
+        user.setUsername("Vasyliok");
+        user.setEmail("vasyl@gmail.com");
+        user.setStreet("Vasylkivska");
+        user.setSuite("12");
+        user.setCity("Kyiv");
+        user.setZipcode("05732");
+        user.setLat("-37.315");
+        user.setLng("81.149");
+        user.setPhone("1-770-736-8031");
+        user.setWebsite("hildegard.org");
+        user.setCompany("Romaguera-Crona");
+        user.setCatchPhrase("Multi-layered client-server neural-net");
+        user.setBs("harness real-time e-markets");
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String toJson = gson.toJson(allcomments);
+        String toJson = gson.toJson(getUserPosts(user));
         System.out.println("toJson = " + toJson);
 
         FileWriter fileWriter = new FileWriter("posts.json");
-        gson.toJson(allcomments, fileWriter);
+        gson.toJson(getUserPosts(user), fileWriter);
         fileWriter.close();
+
+    }
+
+    public static List<Post> getUserPosts(User user) throws IOException, InterruptedException {
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(USERS_URI + "/" + user.getId() + "/posts"))
+                .GET()
+                .build();
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        return gson.fromJson(response.body(), new TypeToken<List<Post>>() {}.getType());
+
     }
 
 }

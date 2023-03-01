@@ -41,7 +41,8 @@ public class task2 {
         user.setBs("harness real-time e-markets");
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
+        String toJson = gson.toJson(getUserPosts(user));
+        System.out.println("toJson = " + toJson);
 
         FileWriter fileWriter = new FileWriter("posts.json");
         gson.toJson(getUserPosts(user), fileWriter);
@@ -49,10 +50,8 @@ public class task2 {
         Post post = new Post();
         post.setId("10");
 
-        Gson gson2 = new GsonBuilder().setPrettyPrinting().create();
-
-        FileWriter fileWriter2 = new FileWriter("comments.json");
-        gson2.toJson(getPostsComments(post), fileWriter2);
+        fileWriter = new FileWriter("comment.json");
+        gson.toJson(getPostsComments(post), fileWriter);
         fileWriter.close();
 
     }
